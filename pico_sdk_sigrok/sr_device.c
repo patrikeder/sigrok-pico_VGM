@@ -287,10 +287,19 @@ int process_char(sr_device_t *d, char charin)
 //So in basemode, D0-D20 are GP2..GP22
 //in dig_26_mode D0-D22,D23-D25 are GP0..GP22,GP26..GP28
 //in dig_32_mode D0-D31 are GP0..GP31
+//in dig_vgm_mode D0-D1 are GP16..17 and D2-D4 are GP22..24
             #ifdef BASE_MODE //D0-20 are GP2..GP22
                tmpint2=tmpint+2;
             #elif DIG_26_MODE //D0-D22,D23-D25 are GP0..GP22,GP26..GP28
                tmpint2=(tmpint<=22) ? tmpint : tmpint+3; 
+            #elif DIG_VGM_MODE //D0-D1 are GP16..17+GP22..24
+               if(tmpint<=1){
+                  tmpint2=tmpint+16;
+               } else if((tmpint>=2)&&(tmpint<=4)){
+                  tmpint2=tmpint+20;
+               } else {
+                  tmpint2=-1; //invalid
+               }  
             #else //DIG_32_MODE and all else are direct mapped.
                tmpint2=tmpint;
             #endif

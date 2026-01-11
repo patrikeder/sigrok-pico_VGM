@@ -49,6 +49,7 @@
 #undef BASE_MODE
 #undef DIG_26_MODE
 #undef DIG_32_MODE
+#undef DIG_VDM_MODE
 #undef HAS_LED
 #if PICO_MODE == 0 //Baseline
   #define BASE_MODE 1
@@ -88,7 +89,7 @@
   #define UART_EN 0
   #define PIN_TEST_MASK 0xFFFFFFFF
 #elif PICO_MODE == 3 //VGM
-  #define DIG_VDM_MODE 1
+  #define DIG_VGM_MODE 1
   //#TODO: Same or channels to be moved
   #define NUM_A_CHAN 4 // number of analog channels
   //#TODO: set to correct value
