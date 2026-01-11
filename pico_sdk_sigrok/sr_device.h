@@ -91,7 +91,7 @@
 #elif PICO_MODE == 3 //VGM
   #define DIG_VGM_MODE 1
   //#TODO: Same or channels to be moved
-  #define NUM_A_CHAN 4 // number of analog channels
+  #define NUM_A_CHAN 3 // number of analog channels
   //#TODO: set to correct value
   #define NUM_D_CHAN 5 // number of digital channels 
 
@@ -106,7 +106,7 @@
   #define MEM_D_MASK_U 0x01C00000  //upper mask of bits for digital inputs
   #define PIN_TEST_MASK 0x01C30000
   //#TODO: verify LED Pin and fucntion -> reuse from VGM firmware ?
-  #define HAS_LED 1
+  #define HAS_LED 0
 #endif
 //These two enable debug print outs of D4 generation, D4_DBG2 is higher verbosity
 //#define D4_DBG 1
@@ -123,8 +123,8 @@
 // The TUD CDC buffer is only 256B so it doesn't help to have more than this.
 #define TX_BUF_SIZE 260
 //Setting to default value of Raspberry PI debug probe of 115200
-////// P #define UART_BAUD 115200 //921600
-#define UART_BAUD 921600
+#define UART_BAUD 115200 //921600
+//#define UART_BAUD 921600
 // This sets the point which we will send data from the txbuf to the usb cdc.
 // For the 5-21 channel RLE it must leave a spare ~83 entries to cover the case where
 // a new long steady input comes after deciding to not send a sample.

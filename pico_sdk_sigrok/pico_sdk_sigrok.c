@@ -908,11 +908,11 @@ int main()
   adc_gpio_init(27);
   adc_gpio_init(28);
   adc_init();
-#elif defined(DIG_VDM_MODE)
+#elif defined(DIG_VGM_MODE)
   adc_gpio_init(26);
   adc_gpio_init(27);
   adc_gpio_init(28);
-  adc_gpio_init(29);
+  //adc_gpio_init(29);
   adc_init();
 #endif
 
