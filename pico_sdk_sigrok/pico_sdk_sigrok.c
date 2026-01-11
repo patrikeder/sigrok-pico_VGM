@@ -778,7 +778,7 @@ int main(){
     Dprintf("pll_sys = %dkHz\n\r", f_pll_sys);
     uint f_clk_sys = frequency_count_khz(CLOCKS_FC0_SRC_VALUE_CLK_SYS);
     Dprintf("clk_sys = %dkHz\n\r", f_clk_sys);
-    #ifndef DIG_32_MODE && !defined(DIG_VDM_MODE)
+    #if (!defined(DIG_32_MODE) && !defined(DIG_VDM_MODE))
     //Set GPIO23 (TP4) to control switched mode power supply noise
     //This may reduce noise into the ADC in some use cases.   
     gpio_init_mask(1<<23);
@@ -795,6 +795,12 @@ int main(){
     adc_gpio_init(26);
     adc_gpio_init(27);
     adc_gpio_init(28);
+    adc_init();
+    #elif defined(DIG_VDM_MODE)
+    adc_gpio_init(26);
+    adc_gpio_init(27);
+    adc_gpio_init(28);
+    adc_gpio_init(29);
     adc_init();
     #endif
 
