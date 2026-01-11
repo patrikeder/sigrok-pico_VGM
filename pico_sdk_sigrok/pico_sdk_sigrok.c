@@ -469,6 +469,10 @@ void __attribute__ ((noinline)) send_slices_4B(sr_device_t *d,uint8_t *dbuf){
         //mask off upper unused
         cval=cval&MEM_D_MASK_L;
         //No change for DIG_32_MODE as all are defined  
+      #elif DIG_VDM_MODE
+        //In VDM mode we have up to 5 defined channels starting at bit 16, but the upper bits
+        //are not packed down.  So we need to remove bits 18-21
+        cval=(cval&MEM_D_MASK_L)|((cval&MEM_D_MASK_U)>>4)>>15;
        #endif
        if(cval==lval){
       	   rlecnt++;
@@ -768,14 +772,13 @@ int main(){
         gpio_put(PICO_DEFAULT_LED_PIN, true);
         sleep_ms(delay);
         gpio_put(PICO_DEFAULT_LED_PIN, false);
-        sleep_ms(delay*2);
-        
+        sleep_ms(delay*2);    
     #endif
     uint f_pll_sys = frequency_count_khz(CLOCKS_FC0_SRC_VALUE_PLL_SYS_CLKSRC_PRIMARY);
     Dprintf("pll_sys = %dkHz\n\r", f_pll_sys);
     uint f_clk_sys = frequency_count_khz(CLOCKS_FC0_SRC_VALUE_CLK_SYS);
     Dprintf("clk_sys = %dkHz\n\r", f_clk_sys);
-    #ifndef DIG_32_MODE 
+    #ifndef DIG_32_MODE && !defined(DIG_VDM_MODE)
     //Set GPIO23 (TP4) to control switched mode power supply noise
     //This may reduce noise into the ADC in some use cases.   
     gpio_init_mask(1<<23);

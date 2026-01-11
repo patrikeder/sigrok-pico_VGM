@@ -23,17 +23,29 @@
 // Digital 32 Mode
 // Use GPIO 0..31 for boards that export those pins
 // No uart, no ADC, LED, power supply control or power sense etc.
+////////////////////////////
+// MODE 3: VGM mode -21 digital, 3 analog
+// GP0,1 is debug uart TX, RX (but rx not used) 
+// GP2-GP5 are used for IMU SPI interface and not board I/O
+// GP6-GP7 are IMU sidebands and not board I/O
+// GP8-GP15 are LVDS output
+// GP18,19,20 are I2C and CEC to HDMI port
+// GP16,17,22,23,24 Digital in -> CONN
+// GP21(G),24(R),25(B) control the LED and is not a board I/O  CONN
+// GP26-29 are ADC. (Only 7 bit accuracy supported) CONN
 /////////////////////////
 // Note: In the wireless versions, GPIO23-25 control the wifi chip, 23 and 24
 //aren't available in the PICO, and 25 controls the LED. So while the LED is lost,
 //there is no change in available channels for sampling.
-#define PICO_MODE 3 //0 is baseline, 1 is digital 26, 2 is digital 32, Is Video Game Module mode (like baseline, limited IO)
+#define PICO_MODE 3 //0 is baseline, 1 is digital 26, 2 is digital 32, Is Video Game Module mode (similar to baseline, limited IO)
+
 //WARNING: USE PIN_TEST_MODE with extreme caution!!!!
 //If set, treat the inputs (A&D) to be outputs so that the device can drive values for
 //turn-on testing.  Enabling this allows all modes to be tested without having to drive
 //test patterns on the chip.  But it turns what are normally inputs to outputs and thus
 //can cause drive fights if any drivers are connected.
 //#define PIN_TEST_MODE 1
+
 #undef BASE_MODE
 #undef DIG_26_MODE
 #undef DIG_32_MODE
@@ -76,21 +88,22 @@
   #define UART_EN 0
   #define PIN_TEST_MASK 0xFFFFFFFF
 #elif PICO_MODE == 3 //VGM
-  #define BASE_MODE 1
-  #define NUM_A_CHAN 3 // number of analog channels
+  #define DIG_VDM_MODE 1
+  //#TODO: Same or channels to be moved
+  #define NUM_A_CHAN 4 // number of analog channels
   //#TODO: set to correct value
-  #define NUM_D_CHAN 21 // number of digital channels 
+  #define NUM_D_CHAN 5 // number of digital channels 
+
   //Note: GPIO_D_MASK is relative to the pins of the chip, whereas the 
   //MEM_D_MASK is relative to the value written in memory, those may be different depending
   //on how data is shifted from the GPIOs into memory.
-
   //#TODO: set to correct value
-  #define GPIO_D_MASK 0x7FFFFC  //Mask of bits for digital inputs
+  #define GPIO_D_MASK 0x01C30000  //Mask of bits for digital inputs
   #define UART_EN 1
   //Since this mode has all digital inputs contigous, the upper mask isn't needed.
-  #define MEM_D_MASK_L 0x007FFFFF  //lower mask of bits for digital inputs
-  #define MEM_D_MASK_U 0x0  //upper mask of bits for digital inputs
-  #define PIN_TEST_MASK 0x1C7FFFFE
+  #define MEM_D_MASK_L 0x00030000  //lower mask of bits for digital inputs
+  #define MEM_D_MASK_U 0x01C00000  //upper mask of bits for digital inputs
+  #define PIN_TEST_MASK 0x01C30000
   //#TODO: verify LED Pin and fucntion -> reuse from VGM firmware ?
   #define HAS_LED 1
 #endif
