@@ -208,7 +208,7 @@ uint32_t send_slices_D4(sr_device_t *d, uint8_t *dbuf)
 {
   uint8_t nibcurr, niblast;
   uint32_t cword, lword; // current and last word
-  uint32_t *cptr;
+  uint32_t *cptr;  
   // Note that this function always sends the first 8 samples, even if
   // send_slice_init sets remaining samples to zero.  That shouldn't happen
   // as we should also be in free running mode or split the two halves
@@ -216,6 +216,7 @@ uint32_t send_slices_D4(sr_device_t *d, uint8_t *dbuf)
   send_slice_init(d, dbuf);
   // Don't optimize the first word (eight samples) perfectly, just send them to make the for loop easier,
   // and setup the initial conditions for rle tracking
+  Dprintf("Enter D4 sts %d sr %d\n\r",d->samples_per_half,samp_remain);
   cptr = (uint32_t *)&(dbuf[0]);
   cword = *cptr;
 #ifdef D4_DBG
@@ -363,10 +364,11 @@ uint32_t send_slices_D4(sr_device_t *d, uint8_t *dbuf)
 // Send a digital sample of multiple bytes with the 7 bit encoding
 void inline tx_d_samp(sr_device_t *d, uint32_t cval)
 {
+  //Dprintf("cval 0x%X \n",cval);
   for (char b = 0; b < d->d_tx_bps; b++)
   {
     txbuf[txbufidx++] = (cval | 0x80);
-    //      Dprintf("txds b %d cv 0x%X idx %d \n\r",b,cval,txbufidx);
+    //Dprintf("txds b %d cv 0x%X idx %d \n\r",b,cval,txbufidx);
     cval >>= 7;
   }
 }
@@ -398,10 +400,12 @@ uint32_t get_cval(uint8_t *dbuf)
     // mask off upper unused
     cval = cval & MEM_D_MASK_L;
     // No change for DIG_32_MODE as all are defined
-#elif DIG_VDM_MODE
-    // In VDM mode we have up to 5 defined channels starting at bit 16, but the upper bits
+#elif DIG_VGM_MODE
+    // In VGM mode we have up to 5 defined channels starting at bit 16, but the upper bits
     // are not packed down.  So we need to remove bits 18-21
-    cval = (cval & MEM_D_MASK_L) | ((cval & MEM_D_MASK_U) >> 4) >> 15;
+    Dprintf("cval_r 0x%X \n",cval);
+    cval = (cval & MEM_D_MASK_L) | ((cval & MEM_D_MASK_U)>>4) >> 15;    
+    Dprintf("cval_M 0x%X \n",cval);
 #endif
   }
   rxbufdidx += d_dma_bps;
@@ -467,7 +471,7 @@ void send_first_dig_sample(sr_device_t *d, uint8_t *dbuf)
 void __attribute__((noinline)) send_slices_1B(sr_device_t *d, uint8_t *dbuf)
 {
   send_slice_init(d, dbuf);
-  //   Dprintf("Enter 1Ba sts %d sr %d\n\r",d->samples_per_half,samp_remain);
+  Dprintf("Enter 1Ba sts %d sr %d\n\r",d->samples_per_half,samp_remain);
   send_first_dig_sample(d, dbuf);
   for (int s = 0; s < samp_remain; s++)
   {
@@ -495,6 +499,7 @@ void __attribute__((noinline)) send_slices_2B(sr_device_t *d, uint8_t *dbuf)
 {
   send_slice_init(d, dbuf);
   send_first_dig_sample(d, dbuf);
+  Dprintf("Enter 2Ba sts %d sr %d\n\r",d->samples_per_half,samp_remain);
   for (int s = 0; s < samp_remain; s++)
   {
     cval = (*((uint16_t *)(dbuf + rxbufdidx)));
@@ -514,27 +519,31 @@ void __attribute__((noinline)) send_slices_2B(sr_device_t *d, uint8_t *dbuf)
   check_rle();
   check_tx_buf(1);
 } // send_slices_2B
+
 // 4B is 17-21 channels in BASE_MODE
 // It is also used with 17-26 channels in DIG_26_MODE, and 17-32 channels in DIG_32_MODE
 void __attribute__((noinline)) send_slices_4B(sr_device_t *d, uint8_t *dbuf)
 {
   send_slice_init(d, dbuf);
   send_first_dig_sample(d, dbuf);
+  Dprintf("Enter 4Ba sts %d sr %d\n\r",d->samples_per_half,samp_remain);
   for (int s = 0; s < samp_remain; s++)
   {
     cval = (*((uint32_t *)(dbuf + rxbufdidx)));
     rxbufdidx += 4;
-// Mask invalid bits, remove 29-31, and shift down 26-28 over 23-25
 #ifdef DIG_26_MODE
+    // Mask invalid bits, remove 29-31, and shift down 26-28 over 23-25
     cval = (cval & MEM_D_MASK_L) | ((cval & MEM_D_MASK_U) >> 3);
 #elif BASE_MODE
     // mask off upper unused
     cval = cval & MEM_D_MASK_L;
     // No change for DIG_32_MODE as all are defined
-#elif DIG_VDM_MODE
-    // In VDM mode we have up to 5 defined channels starting at bit 16, but the upper bits
+#elif DIG_VGM_MODE
+    // In VGM mode we have up to 5 defined channels starting at bit 16, but the upper bits
     // are not packed down.  So we need to remove bits 18-21
-    cval = (cval & MEM_D_MASK_L) | ((cval & MEM_D_MASK_U) >> 4) >> 15;
+    Dprintf("cval_r 0x%X \n",cval);
+    cval = (cval & MEM_D_MASK_L) | ((cval & MEM_D_MASK_U)>>4) >> 15;    
+    Dprintf("cval_M 0x%X \n",cval);
 #endif
     if (cval == lval)
     {
@@ -846,8 +855,7 @@ void core1_entry()
 #endif // PIN_TEST_MODE
 int main()
 {
-  int delay = 100;
-  stdio_usb_init();
+  int delay = 100;  stdio_usb_init();
 #if (UART_EN == 1)
   uart_set_format(uart0, 8, 1, 0);
   uart_init(uart0, UART_BAUD);
@@ -859,8 +867,9 @@ int main()
   // But an extra .1 seconds won't bother anything...
   sleep_us(100000);
   Dprintf("\n\rHello from PICO sigrok device \n\r");
+  Dprintf("Build: %s %s \n\r", __DATE__, __TIME__);
 // Pulse the LED in a morse code "P" to confirm programming
-#ifdef HAS_LED
+#if defined(HAS_LED) && !defined(DIG_VGM_MODE)
   gpio_init(PICO_DEFAULT_LED_PIN);
   gpio_set_function(PICO_DEFAULT_LED_PIN, GPIO_FUNC_SIO);
   gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
@@ -885,6 +894,32 @@ int main()
   sleep_ms(delay);
   gpio_put(PICO_DEFAULT_LED_PIN, false);
   sleep_ms(delay * 2);
+#elif defined(HAS_LED) && defined(DIG_VGM_MODE)
+  gpio_init(LED_B);
+  gpio_init(LED_R);
+  gpio_init(LED_G);
+  gpio_set_function(LED_B, GPIO_FUNC_SIO);
+  gpio_set_function(LED_R, GPIO_FUNC_SIO);
+  gpio_set_function(LED_G, GPIO_FUNC_SIO);
+  gpio_set_dir(LED_B, GPIO_OUT);
+  gpio_set_dir(LED_R, GPIO_OUT);
+  gpio_set_dir(LED_G, GPIO_OUT);
+
+  gpio_put(LED_B, true);
+  sleep_ms(delay);
+  gpio_put(LED_B, false);
+  sleep_ms(delay);
+  
+  gpio_put(LED_R, true);
+  sleep_ms(delay);
+  gpio_put(LED_R, false);
+  sleep_ms(delay);
+  
+  gpio_put(LED_G, true);
+  sleep_ms(delay);
+  gpio_put(LED_G, false);
+  sleep_ms(delay);
+  gpio_put(LED_R, true);
 #endif
   uint f_pll_sys = frequency_count_khz(CLOCKS_FC0_SRC_VALUE_PLL_SYS_CLKSRC_PRIMARY);
   Dprintf("pll_sys = %dkHz\n\r", f_pll_sys);
@@ -903,16 +938,10 @@ int main()
 // GPIOs 26 through 28 (the ADC ports) are on the PICO, GPIO29 is not a pin on the PICO
 // Note that digital only modes don't block all configuration related to ADC, but does enough
 // to ensure we can properly sample the pins digitally.
-#ifdef BASE_MODE
+#if defined(BASE_MODE) || defined(DIG_VGM_MODE)
   adc_gpio_init(26);
   adc_gpio_init(27);
   adc_gpio_init(28);
-  adc_init();
-#elif defined(DIG_VGM_MODE)
-  adc_gpio_init(26);
-  adc_gpio_init(27);
-  adc_gpio_init(28);
-  //adc_gpio_init(29);
   adc_init();
 #endif
 
@@ -1069,6 +1098,7 @@ int main()
     {
       bool adc_aborting = false;
       Dprintf("STRTING\n\r");
+  
       // Sample rate must always be even.  Pulseview code enforces this
       // because it specifies a fixed set of frequencies, but sigrok cli can still odd ones.
       dev.sample_rate >>= 1;
@@ -1279,7 +1309,7 @@ int main()
           dev.pin_count = 8;
         }
         d_dma_bps = dev.pin_count >> 3;
-        // Dprintf("pin_count %d\n\r",dev.pin_count);
+        Dprintf("pin_count %d\n\r",dev.pin_count);
         uint16_t capture_prog_instr;
         capture_prog_instr = pio_encode_in(pio_pins, dev.pin_count);
         // Dprintf("capture_prog_instr 0x%X\n\r",capture_prog_instr);
@@ -1295,6 +1325,8 @@ int main()
         sm_config_set_in_pins(&c, 0); // start at GPIO0 since uart isn't used
 #elif DIG_32_MODE
         sm_config_set_in_pins(&c, 0); // start at GPIO0 since uart isn't used
+#elif DIG_VGM_MODE
+        sm_config_set_in_pins(&c, 16); // start at GPIO16 since uart isn't used
 #else
         sm_config_set_in_pins(&c, 2); // start at GPIO2 (keep 0 and 1 for uart)
 #endif

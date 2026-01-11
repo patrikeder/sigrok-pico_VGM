@@ -30,7 +30,7 @@
 // GP6-GP7 are IMU sidebands and not board I/O
 // GP8-GP15 are LVDS output
 // GP18,19,20 are I2C and CEC to HDMI port
-// GP16,17,22,23,24 Digital in -> CONN
+// GP16,17,22,23,29 Digital in -> CONN
 // GP21(G),24(R),25(B) control the LED and is not a board I/O  CONN
 // GP26-29 are ADC. (Only 7 bit accuracy supported) CONN
 /////////////////////////
@@ -93,20 +93,23 @@
   //#TODO: Same or channels to be moved
   #define NUM_A_CHAN 3 // number of analog channels
   //#TODO: set to correct value
-  #define NUM_D_CHAN 5 // number of digital channels 
+  #define NUM_D_CHAN 4 // number of digital channels 
 
   //Note: GPIO_D_MASK is relative to the pins of the chip, whereas the 
   //MEM_D_MASK is relative to the value written in memory, those may be different depending
   //on how data is shifted from the GPIOs into memory.
-  //#TODO: set to correct value
-  #define GPIO_D_MASK 0x01C30000  //Mask of bits for digital inputs
   #define UART_EN 1
-  //Since this mode has all digital inputs contigous, the upper mask isn't needed.
-  #define MEM_D_MASK_L 0x00030000  //lower mask of bits for digital inputs
-  #define MEM_D_MASK_U 0x01C00000  //upper mask of bits for digital inputs
-  #define PIN_TEST_MASK 0x01C30000
-  //#TODO: verify LED Pin and fucntion -> reuse from VGM firmware ?
+  
+  #define GPIO_D_MASK   0x00C30000  //Mask of bits for digital inputs
+  #define MEM_D_MASK_L  0x00030000  //lower mask of bits for digital inputs
+  #define MEM_D_MASK_U  0x00C00000  //upper mask of bits for digital inputs
+  
+  #define PIN_TEST_MASK GPIO_D_MASK
+  
   #define HAS_LED 0
+  #define LED_B 25
+  #define LED_R 24
+  #define LED_G 21
 #endif
 //These two enable debug print outs of D4 generation, D4_DBG2 is higher verbosity
 //#define D4_DBG 1
@@ -124,7 +127,7 @@
 #define TX_BUF_SIZE 260
 //Setting to default value of Raspberry PI debug probe of 115200
 #define UART_BAUD 115200 //921600
-//#define UART_BAUD 921600
+
 // This sets the point which we will send data from the txbuf to the usb cdc.
 // For the 5-21 channel RLE it must leave a spare ~83 entries to cover the case where
 // a new long steady input comes after deciding to not send a sample.
