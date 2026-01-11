@@ -27,7 +27,7 @@
 // Note: In the wireless versions, GPIO23-25 control the wifi chip, 23 and 24
 //aren't available in the PICO, and 25 controls the LED. So while the LED is lost,
 //there is no change in available channels for sampling.
-#define PICO_MODE 2 //0 is baseline, 1 is digital 26, 2 is digital 32
+#define PICO_MODE 3 //0 is baseline, 1 is digital 26, 2 is digital 32, Is Video Game Module mode (like baseline, limited IO)
 //WARNING: USE PIN_TEST_MODE with extreme caution!!!!
 //If set, treat the inputs (A&D) to be outputs so that the device can drive values for
 //turn-on testing.  Enabling this allows all modes to be tested without having to drive
@@ -75,6 +75,24 @@
   #define MEM_D_MASK_U 0x00000000  //upper mask of bits for digital inputs
   #define UART_EN 0
   #define PIN_TEST_MASK 0xFFFFFFFF
+#elif PICO_MODE == 3 //VGM
+  #define BASE_MODE 1
+  #define NUM_A_CHAN 3 // number of analog channels
+  //#TODO: set to correct value
+  #define NUM_D_CHAN 21 // number of digital channels 
+  //Note: GPIO_D_MASK is relative to the pins of the chip, whereas the 
+  //MEM_D_MASK is relative to the value written in memory, those may be different depending
+  //on how data is shifted from the GPIOs into memory.
+
+  //#TODO: set to correct value
+  #define GPIO_D_MASK 0x7FFFFC  //Mask of bits for digital inputs
+  #define UART_EN 1
+  //Since this mode has all digital inputs contigous, the upper mask isn't needed.
+  #define MEM_D_MASK_L 0x007FFFFF  //lower mask of bits for digital inputs
+  #define MEM_D_MASK_U 0x0  //upper mask of bits for digital inputs
+  #define PIN_TEST_MASK 0x1C7FFFFE
+  //#TODO: verify LED Pin and fucntion -> reuse from VGM firmware ?
+  #define HAS_LED 1
 #endif
 //These two enable debug print outs of D4 generation, D4_DBG2 is higher verbosity
 //#define D4_DBG 1
@@ -91,7 +109,8 @@
 // The TUD CDC buffer is only 256B so it doesn't help to have more than this.
 #define TX_BUF_SIZE 260
 //Setting to default value of Raspberry PI debug probe of 115200
-#define UART_BAUD 115200 //921600
+////// P #define UART_BAUD 115200 //921600
+#define UART_BAUD 921600
 // This sets the point which we will send data from the txbuf to the usb cdc.
 // For the 5-21 channel RLE it must leave a spare ~83 entries to cover the case where
 // a new long steady input comes after deciding to not send a sample.

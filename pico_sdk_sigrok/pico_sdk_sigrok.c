@@ -5,6 +5,7 @@
  */
 #include <stdio.h>
 #include "pico/stdlib.h" //uart definitions
+#include "pico/time.h" 
 #include <stdlib.h> //atoi,atol, malloc
 #include "hardware/gpio.h"
 #include "hardware/pio.h"

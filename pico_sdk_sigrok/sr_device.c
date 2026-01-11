@@ -1,4 +1,6 @@
 #include "sr_device.h"
+#include "pico/time.h"
+#include "pico/bootrom.h"
 #include "hardware/uart.h"
 
 #include <stdarg.h>
