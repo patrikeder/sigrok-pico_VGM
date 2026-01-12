@@ -28,10 +28,10 @@
 // GP0,1 is debug uart TX, RX (but rx not used) 
 // GP2-GP5 are used for IMU SPI interface and not board I/O
 // GP6-GP7 are IMU sidebands and not board I/O
-// GP8-GP15 are LVDS output
-// GP18,19,20 are I2C and CEC to HDMI port
-// GP16,17,22,23,29 Digital in -> CONN
-// GP21(G),24(R),25(B) control the LED and is not a board I/O  CONN
+// GP8-GP15 are LVDS output on HDMI port
+// GP18,19,20 are I2C and CEC to HDMI port -> PU
+// GP16,17,22,23 Digital in -> CONN
+// GP21(G),24(R),25(B) control the LED -> PU
 // GP26-29 are ADC. (Only 7 bit accuracy supported) CONN
 /////////////////////////
 // Note: In the wireless versions, GPIO23-25 control the wifi chip, 23 and 24
@@ -93,16 +93,16 @@
   //#TODO: Same or channels to be moved
   #define NUM_A_CHAN 3 // number of analog channels
   //#TODO: set to correct value
-  #define NUM_D_CHAN 4 // number of digital channels 
+  #define NUM_D_CHAN 18 // number of digital channels 
 
   //Note: GPIO_D_MASK is relative to the pins of the chip, whereas the 
   //MEM_D_MASK is relative to the value written in memory, those may be different depending
   //on how data is shifted from the GPIOs into memory.
   #define UART_EN 1
   
-  #define GPIO_D_MASK   0x00C30000  //Mask of bits for digital inputs
-  #define MEM_D_MASK_L  0x00030000  //lower mask of bits for digital inputs
-  #define MEM_D_MASK_U  0x00C00000  //upper mask of bits for digital inputs
+  #define GPIO_D_MASK   0x03FFFF00  //Mask of bits for digital inputs
+  #define MEM_D_MASK_L  0x0003FFFF  //lower mask of bits for digital inputs
+  #define MEM_D_MASK_U  0x00000000  //upper mask of bits for digital inputs
   
   #define PIN_TEST_MASK GPIO_D_MASK
   

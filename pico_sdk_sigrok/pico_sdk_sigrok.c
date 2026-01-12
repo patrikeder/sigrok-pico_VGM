@@ -403,9 +403,10 @@ uint32_t get_cval(uint8_t *dbuf)
 #elif DIG_VGM_MODE
     // In VGM mode we have up to 5 defined channels starting at bit 16, but the upper bits
     // are not packed down.  So we need to remove bits 18-21
-    Dprintf("cval_r 0x%X \n",cval);
-    cval = (cval & MEM_D_MASK_L) | ((cval & MEM_D_MASK_U)>>4) >> 15;    
-    Dprintf("cval_M 0x%X \n",cval);
+    //Dprintf("cval_r 0x%X \n",cval);
+    //cval = (cval & MEM_D_MASK_L) | ((cval & MEM_D_MASK_U)>>4) >> 16;    
+    cval = (cval & MEM_D_MASK_L);    
+    //Dprintf("cval_M 0x%X \n",cval);
 #endif
   }
   rxbufdidx += d_dma_bps;
@@ -541,9 +542,8 @@ void __attribute__((noinline)) send_slices_4B(sr_device_t *d, uint8_t *dbuf)
 #elif DIG_VGM_MODE
     // In VGM mode we have up to 5 defined channels starting at bit 16, but the upper bits
     // are not packed down.  So we need to remove bits 18-21
-    Dprintf("cval_r 0x%X \n",cval);
-    cval = (cval & MEM_D_MASK_L) | ((cval & MEM_D_MASK_U)>>4) >> 15;    
-    Dprintf("cval_M 0x%X \n",cval);
+    //cval = (cval & MEM_D_MASK_L) | ((cval & MEM_D_MASK_U)>>4) >> 16;    
+    cval = (cval & MEM_D_MASK_L);  
 #endif
     if (cval == lval)
     {
@@ -1326,7 +1326,7 @@ int main()
 #elif DIG_32_MODE
         sm_config_set_in_pins(&c, 0); // start at GPIO0 since uart isn't used
 #elif DIG_VGM_MODE
-        sm_config_set_in_pins(&c, 16); // start at GPIO16 since uart isn't used
+        sm_config_set_in_pins(&c, 8); // start at GPIO8 since SPI pins aren't used
 #else
         sm_config_set_in_pins(&c, 2); // start at GPIO2 (keep 0 and 1 for uart)
 #endif
