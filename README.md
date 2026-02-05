@@ -36,3 +36,38 @@ GettingStarted.md - quick run down on setting things up.
 AnalyzerDetails.md - details on supported modes of the analyzer and various limitations.
 
 SerialProtocol.md - details of the "over the wire" protocol used between the sigrok driver and the device.
+
+## Recent Changes (VGM Adaptation Branch)
+
+The following enhancements have been made to support Video Game Module (VGM) hardware:
+
+### New VGM Mode (Mode 3)
+- Added a new VGM mode alongside the existing baseline, digital-26, and digital-32 modes
+- VGM mode provides 18 digital channels and 3 analog channels
+- Specialized pin mapping for VGM hardware including HDMI connectivity
+
+### Pin Configuration Enhancements
+- **GP0,1**: Debug UART TX/RX
+- **GP2-GP5**: IMU SPI interface
+- **GP6-GP7**: IMU sidebands
+- **GP8-GP15**: LVDS output on HDMI port
+- **GP16,17,22,23**: Digital inputs via connector
+- **GP18,19,20**: I2C and CEC to HDMI port
+- **GP21,24,25**: RGB LED control
+- **GP26-29**: ADC analog inputs via connector
+
+### ADC and Channel Management
+- Implemented proper ADC channel configuration with reduced channel count to prevent startup hangs
+- Fixed ADC enabling and channel mapping for accurate analog signal capture
+- Added support for 4 analog channels in VGM mode (GP26-29)
+
+### Bug Fixes
+- Fixed pin mapping issues affecting digital and analog channel readings
+- Resolved issues where some pins were always reading as 1
+- Stabilized all GPIO pins to properly acquire signals
+
+### Implementation Details
+The changes primarily affect the `pico_sdk_sigrok/` directory:
+- Device configuration in `sr_device.h` with mode definitions and pin assignments
+- Driver implementation in `pico_sdk_sigrok.c` with hardware interface logic
+- Device initialization in `sr_device.c` with proper ADC and GPIO setup
