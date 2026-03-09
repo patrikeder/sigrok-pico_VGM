@@ -19,6 +19,7 @@
 #include "tusb.h" //.tud_cdc_write...
 
 #include "sr_device.h"
+#include "PGA113/pga112.h"
 
 // forced_test_mode is a special mode that puts the device into an active sampling
 // state out of reset.  It is used for a quick way to debug features without needed
@@ -208,7 +209,7 @@ uint32_t send_slices_D4(sr_device_t *d, uint8_t *dbuf)
 {
   uint8_t nibcurr, niblast;
   uint32_t cword, lword; // current and last word
-  uint32_t *cptr;  
+  uint32_t *cptr;
   // Note that this function always sends the first 8 samples, even if
   // send_slice_init sets remaining samples to zero.  That shouldn't happen
   // as we should also be in free running mode or split the two halves
@@ -216,7 +217,7 @@ uint32_t send_slices_D4(sr_device_t *d, uint8_t *dbuf)
   send_slice_init(d, dbuf);
   // Don't optimize the first word (eight samples) perfectly, just send them to make the for loop easier,
   // and setup the initial conditions for rle tracking
-  Dprintf("Enter D4 sts %d sr %d\n\r",d->samples_per_half,samp_remain);
+  Dprintf("Enter D4 sts %d sr %d\n\r", d->samples_per_half, samp_remain);
   cptr = (uint32_t *)&(dbuf[0]);
   cword = *cptr;
 #ifdef D4_DBG
@@ -362,13 +363,13 @@ uint32_t send_slices_D4(sr_device_t *d, uint8_t *dbuf)
 } // send_slices_D4
 
 // Send a digital sample of multiple bytes with the 7 bit encoding
-void inline tx_d_samp(sr_device_t *d, uint32_t cval)
+static inline void tx_d_samp(sr_device_t *d, uint32_t cval)
 {
-  //Dprintf("cval 0x%X \n",cval);
+  // Dprintf("cval 0x%X \n",cval);
   for (char b = 0; b < d->d_tx_bps; b++)
   {
     txbuf[txbufidx++] = (cval | 0x80);
-    //Dprintf("txds b %d cv 0x%X idx %d \n\r",b,cval,txbufidx);
+    // Dprintf("txds b %d cv 0x%X idx %d \n\r",b,cval,txbufidx);
     cval >>= 7;
   }
 }
@@ -403,10 +404,10 @@ uint32_t get_cval(uint8_t *dbuf)
 #elif DIG_VGM_MODE
     // In VGM mode we have up to 5 defined channels starting at bit 16, but the upper bits
     // are not packed down.  So we need to remove bits 18-21
-    //Dprintf("cval_r 0x%X \n",cval);
-    //cval = (cval & MEM_D_MASK_L) | ((cval & MEM_D_MASK_U)>>4) >> 16;    
-    cval = (cval & MEM_D_MASK_L);    
-    //Dprintf("cval_M 0x%X \n",cval);
+    // Dprintf("cval_r 0x%X \n",cval);
+    // cval = (cval & MEM_D_MASK_L) | ((cval & MEM_D_MASK_U)>>4) >> 16;
+    cval = (cval & MEM_D_MASK_L);
+    // Dprintf("cval_M 0x%X \n",cval);
 #endif
   }
   rxbufdidx += d_dma_bps;
@@ -420,7 +421,7 @@ forward txbuf bytes to USB to prevent txbufidx from overflowing the size
 of txbuf. We do not always push to USB to reduce its impact
 on performance.
  */
-void inline check_rle()
+void static inline check_rle()
 {
   //  Dprintf("RLEx %d\n\r",rlecnt);
   while (rlecnt >= 1568)
@@ -472,7 +473,7 @@ void send_first_dig_sample(sr_device_t *d, uint8_t *dbuf)
 void __attribute__((noinline)) send_slices_1B(sr_device_t *d, uint8_t *dbuf)
 {
   send_slice_init(d, dbuf);
-  Dprintf("Enter 1Ba sts %d sr %d\n\r",d->samples_per_half,samp_remain);
+  Dprintf("Enter 1Ba sts %d sr %d\n\r", d->samples_per_half, samp_remain);
   send_first_dig_sample(d, dbuf);
   for (int s = 0; s < samp_remain; s++)
   {
@@ -500,7 +501,7 @@ void __attribute__((noinline)) send_slices_2B(sr_device_t *d, uint8_t *dbuf)
 {
   send_slice_init(d, dbuf);
   send_first_dig_sample(d, dbuf);
-  Dprintf("Enter 2Ba sts %d sr %d\n\r",d->samples_per_half,samp_remain);
+  Dprintf("Enter 2Ba sts %d sr %d\n\r", d->samples_per_half, samp_remain);
   for (int s = 0; s < samp_remain; s++)
   {
     cval = (*((uint16_t *)(dbuf + rxbufdidx)));
@@ -527,7 +528,7 @@ void __attribute__((noinline)) send_slices_4B(sr_device_t *d, uint8_t *dbuf)
 {
   send_slice_init(d, dbuf);
   send_first_dig_sample(d, dbuf);
-  Dprintf("Enter 4Ba sts %d sr %d\n\r",d->samples_per_half,samp_remain);
+  Dprintf("Enter 4Ba sts %d sr %d\n\r", d->samples_per_half, samp_remain);
   for (int s = 0; s < samp_remain; s++)
   {
     cval = (*((uint32_t *)(dbuf + rxbufdidx)));
@@ -542,8 +543,8 @@ void __attribute__((noinline)) send_slices_4B(sr_device_t *d, uint8_t *dbuf)
 #elif DIG_VGM_MODE
     // In VGM mode we have up to 5 defined channels starting at bit 16, but the upper bits
     // are not packed down.  So we need to remove bits 18-21
-    //cval = (cval & MEM_D_MASK_L) | ((cval & MEM_D_MASK_U)>>4) >> 16;    
-    cval = (cval & MEM_D_MASK_L);  
+    // cval = (cval & MEM_D_MASK_L) | ((cval & MEM_D_MASK_U)>>4) >> 16;
+    cval = (cval & MEM_D_MASK_L);
 #endif
     if (cval == lval)
     {
@@ -855,7 +856,8 @@ void core1_entry()
 #endif // PIN_TEST_MODE
 int main()
 {
-  int delay = 100;  stdio_usb_init();
+  int delay = 100;
+  stdio_usb_init();
 #if (UART_EN == 1)
   uart_set_format(uart0, 8, 1, 0);
   uart_init(uart0, UART_BAUD);
@@ -909,12 +911,12 @@ int main()
   sleep_ms(delay);
   gpio_put(LED_B, false);
   sleep_ms(delay);
-  
+
   gpio_put(LED_R, true);
   sleep_ms(delay);
   gpio_put(LED_R, false);
   sleep_ms(delay);
-  
+
   gpio_put(LED_G, true);
   sleep_ms(delay);
   gpio_put(LED_G, false);
@@ -943,6 +945,31 @@ int main()
   adc_gpio_init(27);
   adc_gpio_init(28);
   adc_init();
+#endif
+#if defined(DIG_VGM_MODE)
+  const uint8_t CS_COUNT = 3;
+#define CS0_PIN 21
+#define CS1_PIN 23
+#define CS2_PIN 25
+
+  const uint32_t CS_PINS[3] = {CS0_PIN, CS1_PIN, CS2_PIN};
+  const uint32_t CLK_PIN = 16;
+  const uint32_t DIO_PIN = 22;
+
+  const uint32_t DELAY_US = 5; // clock edge spacing (speed)
+
+  pga112_t pga0, pga1, pga2;
+
+  // Initialize SW_SPI
+  sw_spi_t spi;
+  sw_spi_init(&spi, CS_PINS, CS_COUNT, CLK_PIN, DIO_PIN, DELAY_US);
+
+  pga112_init(&pga0, &spi, 0);
+  pga112_init(&pga1, &spi, 1);
+  pga112_init(&pga2, &spi, 2);
+  pga112_set_gain_and_channel(&pga0, PGA11X_GAIN_BINARY_1, PGA11X_CH_1);
+  pga112_set_gain_and_channel(&pga1, PGA11X_GAIN_BINARY_1, PGA11X_CH_1);
+  pga112_set_gain_and_channel(&pga2, PGA11X_GAIN_BINARY_1, PGA11X_CH_1);
 #endif
 
   halves_seen = 0;
@@ -1098,7 +1125,7 @@ int main()
     {
       bool adc_aborting = false;
       Dprintf("STRTING\n\r");
-  
+
       // Sample rate must always be even.  Pulseview code enforces this
       // because it specifies a fixed set of frequencies, but sigrok cli can still odd ones.
       dev.sample_rate >>= 1;
@@ -1309,7 +1336,7 @@ int main()
           dev.pin_count = 8;
         }
         d_dma_bps = dev.pin_count >> 3;
-        Dprintf("pin_count %d\n\r",dev.pin_count);
+        Dprintf("pin_count %d\n\r", dev.pin_count);
         uint16_t capture_prog_instr;
         capture_prog_instr = pio_encode_in(pio_pins, dev.pin_count);
         // Dprintf("capture_prog_instr 0x%X\n\r",capture_prog_instr);
