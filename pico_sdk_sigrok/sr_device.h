@@ -26,11 +26,11 @@
 ////////////////////////////
 // MODE 3: VGM mode -21 digital, 3 analog
 // GP0,1 is debug uart TX, RX (but rx not used) 
-// GP2-GP5 are used for IMU SPI interface and not board I/O
-// GP6-GP7 are IMU sidebands and not board I/O
-// GP8-GP15 are LVDS output on HDMI port
-// GP18,19,20 are I2C and CEC to HDMI port -> PU
-// GP16,17,22,23 Digital in -> CONN
+// GP2-GP5 are used for IMU SPI interface and not board I/O -> Not used
+// GP6-GP7 are IMU sidebands and not board I/O -> Not used
+// GP8-GP15 are LVDS output on HDMI port -> Digital IN
+// GP18,19,20 are I2C and CEC to HDMI port -> PU (PCB)
+// GP16,17,22,23, 25 Analog front ctrl
 // GP21(G),24(R),25(B) control the LED -> PU
 // GP26-29 are ADC. (Only 7 bit accuracy supported) CONN
 /////////////////////////
@@ -93,16 +93,16 @@
   //#TODO: Same or channels to be moved
   #define NUM_A_CHAN 3 // number of analog channels
   //#TODO: set to correct value
-  #define NUM_D_CHAN 18 // number of digital channels 
+  #define NUM_D_CHAN 11 // number of digital channels 
 
   //Note: GPIO_D_MASK is relative to the pins of the chip, whereas the 
   //MEM_D_MASK is relative to the value written in memory, those may be different depending
   //on how data is shifted from the GPIOs into memory.
   #define UART_EN 1
   
-  #define GPIO_D_MASK   0x03FFFF00  //Mask of bits for digital inputs
-  #define MEM_D_MASK_L  0x0003FFFF  //lower mask of bits for digital inputs
-  #define MEM_D_MASK_U  0x00000000  //upper mask of bits for digital inputs
+  #define GPIO_D_MASK   0x01C0FF00  //Mask of bits for digital inputs
+  #define MEM_D_MASK_L  0x000000FF  //lower mask of bits for digital inputs
+  #define MEM_D_MASK_U  0x0001C000  //upper mask of bits for digital inputs
   
   #define PIN_TEST_MASK GPIO_D_MASK
   

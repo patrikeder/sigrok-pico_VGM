@@ -963,7 +963,7 @@ int main()
   // Initialize SW_SPI
   sw_spi_t spi;
   sw_spi_init(&spi, CS_PINS, CS_COUNT, CLK_PIN, DIO_PIN, DELAY_US);
-
+  // set initial gain
   pga112_init(&pga0, &spi, 0);
   pga112_init(&pga1, &spi, 1);
   pga112_init(&pga2, &spi, 2);
